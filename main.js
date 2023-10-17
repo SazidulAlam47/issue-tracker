@@ -1,3 +1,8 @@
+if (localStorage.getItem('issues') == null) {
+  const nothing = [];
+  localStorage.setItem('issues', JSON.stringify(nothing));
+}
+
 document.getElementById('issueInputForm').addEventListener('submit', submitIssue);
 
 function submitIssue(e) {
@@ -23,7 +28,7 @@ function submitIssue(e) {
 
 const closeIssue = id => {
   const issues = JSON.parse(localStorage.getItem('issues'));
-  const currentIssue = issues.find(issue => issue.id === id);
+  const currentIssue = issues.find(issue => issue.id == id);
   currentIssue.status = 'Closed';
   localStorage.setItem('issues', JSON.stringify(issues));
   fetchIssues();
@@ -31,26 +36,41 @@ const closeIssue = id => {
 
 const deleteIssue = id => {
   const issues = JSON.parse(localStorage.getItem('issues'));
-  const remainingIssues = issues.filter( issue.id !== id )
+  const remainingIssues = issues.filter( issue => issue.id != id );
   localStorage.setItem('issues', JSON.stringify(remainingIssues));
+  fetchIssues();
 }
 
 const fetchIssues = () => {
   const issues = JSON.parse(localStorage.getItem('issues'));
   const issuesList = document.getElementById('issuesList');
   issuesList.innerHTML = '';
-
+  
   for (var i = 0; i < issues.length; i++) {
     const {id, description, severity, assignedTo, status} = issues[i];
-
+    
     issuesList.innerHTML +=   `<div class="well">
-                              <h6>Issue ID: ${id} </h6>
-                              <p><span class="label label-info"> ${status} </span></p>
-                              <h3> ${description} </h3>
-                              <p><span class="glyphicon glyphicon-time"></span> ${severity}</p>
-                              <p><span class="glyphicon glyphicon-user"></span> ${assignedTo}</p>
-                              <a href="#" onclick="setStatusClosed(${id})" class="btn btn-warning">Close</a>
-                              <a href="#" onclick="deleteIssue(${id})" class="btn btn-danger">Delete</a>
-                              </div>`;
+    <h6>Issue ID: ${id} </h6>
+    <p><span class="label label-info"> ${status} </span></p>
+    <h3 class="${status.toLowerCase()}"> ${description} </h3>
+    <p><span class="glyphicon glyphicon-time"></span> ${severity}</p>
+    <p><span class="glyphicon glyphicon-user"></span> ${assignedTo}</p>
+    <a href="#" onclick="closeIssue(${id})" class="btn btn-warning">Close</a>
+    <a href="#" onclick="deleteIssue(${id})" class="btn btn-danger">Delete</a>
+    </div>`;
+  }
+  updateIssueNumber();
+}
+
+const updateIssueNumber = () => {
+  const issues = JSON.parse(localStorage.getItem('issues'));
+  document.getElementById('total-issue').innerText = issues.length;
+  const open = issues.filter(issue => issue.status == 'Open');
+  document.getElementById('active-issue').innerText = open.length;
+  if (issues.length == open.length) {
+    document.getElementById("total-issue-container").style.display = 'none';
+  }
+  else{
+    document.getElementById("total-issue-container").style.display = 'inline-block';
   }
 }
